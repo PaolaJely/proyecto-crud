@@ -1,4 +1,4 @@
-FROM nginx:stable-alpine
+FROM nginx:alpine
 
 # Template + entrypoint para inyectar la URL del backend en runtime
 COPY nginx.conf.template /etc/nginx/templates/nginx.conf.template
