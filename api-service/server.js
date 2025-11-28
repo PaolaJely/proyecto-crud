@@ -8,15 +8,13 @@ const PORT = process.env.PORT || 3000;
 app.use(cors());
 app.use(express.json());
 
-// Soporte dual:
-// - Si existe DATABASE_URL (Render / Managed DB) usa connectionString + SSL
-// - Si no, usa variables DB_* para docker-compose local
+// Soporte dual: Managed DB (DATABASE_URL con SSL) o variables locales DB_*
 const connectionString = process.env.DATABASE_URL;
 
 const pool = connectionString
   ? new Pool({
       connectionString,
-      ssl: { rejectUnauthorized: false }, // común en providers gestionados; ajustar si tienes certificados válidos
+      ssl: { rejectUnauthorized: false },
     })
   : new Pool({
       host: process.env.DB_HOST || 'postgres-db',
@@ -30,7 +28,6 @@ pool.on('error', (err) => {
   console.error('Error inesperado en el pool de PostgreSQL:', err);
 });
 
-// Intentos para esperar a que la BD esté lista
 async function waitForDb(retries = 10, delayMs = 2000) {
   for (let i = 0; i < retries; i++) {
     try {
@@ -56,6 +53,22 @@ async function initDatabase() {
   console.log('Tabla users lista');
 }
 
+// Rutas de diagnóstico
+app.get('/', (req, res) => {
+  res.status(200).type('text').send('api-service vivo. Use /api/users para la API.');
+});
+
+app.get('/health', async (req, res) => {
+  try {
+    await pool.query('SELECT 1');
+    res.json({ database: 'ok' });
+  } catch (err) {
+    console.error('Health check DB error:', err.message || err);
+    res.status(500).json({ database: 'error', message: err.message });
+  }
+});
+
+// Endpoints CRUD
 app.get('/api/users', async (req, res) => {
   try {
     const result = await pool.query('SELECT * FROM users ORDER BY id');
@@ -126,7 +139,6 @@ async function start() {
     await initDatabase();
   } catch (err) {
     console.error('Fallo al inicializar DB:', err);
-    // si no conecta, dejamos que el proceso muera para que Render lo reintente
     process.exit(1);
   }
 
