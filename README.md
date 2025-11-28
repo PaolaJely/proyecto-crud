@@ -1,362 +1,139 @@
-# API REST CRUD - Proyecto Docker
+# 🚀 API REST CRUD - Microservicios con Docker
 
-Proyecto de API REST CRUD usando Docker, Node.js, PostgreSQL y Nginx como reverse proxy.
+Sistema de gestión de usuarios con arquitectura de microservicios usando Node.js, PostgreSQL y Nginx.
 
-## Estructura del Proyecto
+---
+
+## 📋 Descripción
+
+API REST que implementa operaciones CRUD (Crear, Leer, Actualizar, Eliminar) para usuarios. El proyecto utiliza una arquitectura de tres capas:
+
+- **Nginx**: Gateway y reverse proxy
+- **API Service**: Backend con lógica de negocio
+- **PostgreSQL**: Base de datos
+
+---
+
+## 🛠️ Tecnologías
+
+- **Node.js** 18
+- **Express** 4.18.2
+- **PostgreSQL** 15
+- **Nginx** (alpine)
+- **Docker** & Docker Compose
+
+---
+
+## 📁 Estructura del Proyecto
 
 ```
 proyecto-crud/
+│
 ├── api-service/
-│   ├── server.js          # Servidor Express con rutas CRUD
-│   ├── package.json       # Dependencias del proyecto
-│   └── Dockerfile         # Imagen Docker del API
+│   ├── server.js          # Código del API
+│   ├── package.json       # Dependencias
+│   └── Dockerfile
+│
 ├── nginx/
-│   ├── nginx.conf         # Configuración del reverse proxy
-│   └── Dockerfile         # Imagen Docker de Nginx
-├── docker-compose.yml     # Orquestación de servicios
-└── README.md              # Este archivo
+│   ├── nginx.conf         # Configuración proxy
+│   └── Dockerfile
+│
+└── docker-compose.yml     # Orquestación
 ```
 
-## Requisitos
+---
 
-- Docker
-- Docker Compose
+## 🌐 Servicios y Puertos
 
-## Instalación y Ejecución
+### Desarrollo Local
 
-### 1. Construir e iniciar los servicios
+| Servicio | Puerto | URL |
+|----------|--------|-----|
+| **nginx-gateway** | 80 | http://localhost |
+| **api-service** | 3000 | http://localhost:3000 |
+| **postgres-db** | 5432 | localhost:5432 |
+
+### Producción (Render)
+
+| Servicio | URL |
+|----------|-----|
+| **nginx-gateway** | https://nginx-gateway-crud.onrender.com |
+| **api-service** | https://proyecto-crud-1nku.onrender.com |
+
+---
+
+## 📡 Endpoints
+
+**Base URL:** https://nginx-gateway-crud.onrender.com/api
+
+| Método | Endpoint | Descripción |
+|--------|----------|-------------|
+| `GET` | `/users` | Listar usuarios |
+| `GET` | `/users/:id` | Obtener usuario |
+| `POST` | `/users` | Crear usuario |
+| `PUT` | `/users/:id` | Actualizar usuario |
+| `DELETE` | `/users/:id` | Eliminar usuario |
+
+---
+
+## 🧪 Ejemplos de Uso
+
+### Listar usuarios
+```bash
+curl https://nginx-gateway-crud.onrender.com/api/users
+```
+
+### Crear usuario
+```bash
+curl -X POST https://nginx-gateway-crud.onrender.com/api/users \
+  -H "Content-Type: application/json" \
+  -d '{"nombre":"María","correo":"maria@example.com"}'
+```
+
+### Actualizar usuario
+```bash
+curl -X PUT https://nginx-gateway-crud.onrender.com/api/users/1 \
+  -H "Content-Type: application/json" \
+  -d '{"nombre":"María Actualizada","correo":"nueva@example.com"}'
+```
+
+### Eliminar usuario
+```bash
+curl -X DELETE https://nginx-gateway-crud.onrender.com/api/users/1
+```
+
+---
+
+## 🏗️ Arquitectura
+
+### Local (Docker Compose)
+```
+Usuario → nginx:80 → api-service:3000 → postgres:5432
+```
+
+### Producción (Render)
+```
+Usuario → nginx-gateway → api-service → PostgreSQL Database
+```
+
+---
+
+## 🚀 Ejecución Local
 
 ```bash
 docker-compose up --build
 ```
 
-### 2. Verificar que los servicios estén corriendo
+Acceder a: http://localhost/api/users
 
-```bash
-docker-compose ps
-```
+---
 
-Deberías ver tres servicios:
-- `postgres-db`
-- `api-service`
-- `nginx-gateway`
+## 📊 Base de Datos
 
-## Endpoints de la API
+**Tabla:** `users`
 
-La API está disponible a través de Nginx en el puerto 80:
-
-- **Base URL**: `http://localhost/api`
-
-### Rutas disponibles:
-
-- `GET /api/users` - Listar todos los usuarios
-- `GET /api/users/:id` - Obtener un usuario por ID
-- `POST /api/users` - Crear un nuevo usuario
-- `PUT /api/users/:id` - Actualizar un usuario
-- `DELETE /api/users/:id` - Eliminar un usuario
-
-## Pruebas con cURL
-
-### 1. Listar todos los usuarios (inicialmente vacío)
-
-```bash
-curl http://localhost/api/users
-```
-
-**Respuesta esperada:**
-```json
-[]
-```
-
-### 2. Crear un nuevo usuario
-
-```bash
-curl -X POST http://localhost/api/users \
-  -H "Content-Type: application/json" \
-  -d '{
-    "nombre": "Juan Pérez",
-    "correo": "juan@example.com"
-  }'
-```
-
-**Respuesta esperada:**
-```json
-{
-  "id": 1,
-  "nombre": "Juan Pérez",
-  "correo": "juan@example.com"
-}
-```
-
-### 3. Crear otro usuario
-
-```bash
-curl -X POST http://localhost/api/users \
-  -H "Content-Type: application/json" \
-  -d '{
-    "nombre": "María García",
-    "correo": "maria@example.com"
-  }'
-```
-
-### 4. Listar todos los usuarios
-
-```bash
-curl http://localhost/api/users
-```
-
-**Respuesta esperada:**
-```json
-[
-  {
-    "id": 1,
-    "nombre": "Juan Pérez",
-    "correo": "juan@example.com"
-  },
-  {
-    "id": 2,
-    "nombre": "María García",
-    "correo": "maria@example.com"
-  }
-]
-```
-
-### 5. Obtener un usuario por ID
-
-```bash
-curl http://localhost/api/users/1
-```
-
-**Respuesta esperada:**
-```json
-{
-  "id": 1,
-  "nombre": "Juan Pérez",
-  "correo": "juan@example.com"
-}
-```
-
-### 6. Actualizar un usuario
-
-```bash
-curl -X PUT http://localhost/api/users/1 \
-  -H "Content-Type: application/json" \
-  -d '{
-    "nombre": "Juan Carlos Pérez",
-    "correo": "juan.carlos@example.com"
-  }'
-```
-
-**Respuesta esperada:**
-```json
-{
-  "id": 1,
-  "nombre": "Juan Carlos Pérez",
-  "correo": "juan.carlos@example.com"
-}
-```
-
-### 7. Eliminar un usuario
-
-```bash
-curl -X DELETE http://localhost/api/users/1
-```
-
-**Respuesta esperada:**
-```json
-{
-  "success": true
-}
-```
-
-### 8. Verificar que el usuario fue eliminado
-
-```bash
-curl http://localhost/api/users
-```
-
-**Respuesta esperada:**
-```json
-[
-  {
-    "id": 2,
-    "nombre": "María García",
-    "correo": "maria@example.com"
-  }
-]
-```
-
-## Estructura de la Base de Datos
-
-La tabla `users` se crea automáticamente al iniciar el servicio con la siguiente estructura:
-
-```sql
-CREATE TABLE IF NOT EXISTS users (
-  id SERIAL PRIMARY KEY,
-  nombre TEXT,
-  correo TEXT
-);
-```
-
-## Acceso a PostgreSQL
-
-### Conectarse a la base de datos desde el host
-
-```bash
-docker exec -it proyecto-crud-postgres-db-1 psql -U postgres -d crud_db
-```
-
-O si el contenedor tiene un nombre diferente:
-
-```bash
-docker exec -it $(docker-compose ps -q postgres-db) psql -U postgres -d crud_db
-```
-
-### Comandos SQL útiles
-
-```sql
--- Ver todas las tablas
-\dt
-
--- Ver estructura de la tabla users
-\d users
-
--- Consultar todos los usuarios
-SELECT * FROM users;
-
--- Contar usuarios
-SELECT COUNT(*) FROM users;
-
--- Salir
-\q
-```
-
-## Gestión de Contenedores
-
-### Ver logs de todos los servicios
-
-```bash
-docker-compose logs
-```
-
-### Ver logs de un servicio específico
-
-```bash
-docker-compose logs api-service
-docker-compose logs postgres-db
-docker-compose logs nginx-gateway
-```
-
-### Ver logs en tiempo real
-
-```bash
-docker-compose logs -f
-```
-
-### Detener los servicios
-
-```bash
-docker-compose down
-```
-
-### Detener y eliminar volúmenes (⚠️ elimina los datos)
-
-```bash
-docker-compose down -v
-```
-
-### Reiniciar los servicios
-
-```bash
-docker-compose restart
-```
-
-### Reconstruir las imágenes
-
-```bash
-docker-compose up --build
-```
-
-## Arquitectura
-
-```
-Cliente
-  │
-  │ HTTP (Puerto 80)
-  ▼
-Nginx (Reverse Proxy)
-  │
-  │ /api/* → proxy_pass
-  ▼
-API Service (Node.js + Express)
-  │
-  │ SQL Queries
-  ▼
-PostgreSQL Database
-```
-
-## Configuración
-
-### Variables de Entorno
-
-**API Service:**
-- `DB_HOST`: Host de PostgreSQL (default: `postgres-db`)
-- `PORT`: Puerto del servidor (default: `3000`)
-
-**PostgreSQL:**
-- `POSTGRES_DB`: Nombre de la base de datos (default: `crud_db`)
-- Usuario por defecto: `postgres`
-- Contraseña por defecto: `postgres`
-
-## Troubleshooting
-
-### Los servicios no inician
-
-1. Verifica que los puertos 80 y 5432 no estén en uso:
-   ```bash
-   sudo lsof -i :80
-   sudo lsof -i :5432
-   ```
-
-2. Revisa los logs:
-   ```bash
-   docker-compose logs
-   ```
-
-3. Reconstruye las imágenes:
-   ```bash
-   docker-compose down
-   docker-compose up --build
-   ```
-
-### Error de conexión a la base de datos
-
-1. Verifica que PostgreSQL esté corriendo:
-   ```bash
-   docker-compose ps postgres-db
-   ```
-
-2. Espera unos segundos para que PostgreSQL se inicie completamente.
-
-3. Revisa los logs del API Service:
-   ```bash
-   docker-compose logs api-service
-   ```
-
-### La tabla no se crea
-
-La tabla `users` se crea automáticamente al iniciar el servicio API. Verifica los logs:
-
-```bash
-docker-compose logs api-service | grep "Tabla users"
-```
-
-Deberías ver: `Tabla users lista`
-
-## Notas
-
-- Los datos de PostgreSQL se almacenan en un volumen de Docker (se eliminan con `docker-compose down -v`)
-- El API Service espera a que PostgreSQL esté disponible antes de crear la tabla
-- Nginx redirige todas las peticiones `/api/*` al servicio API
-- El servicio API está disponible directamente en `http://localhost:3000` (si se expone el puerto)
-
+| Campo | Tipo |
+|-------|------|
+| id | SERIAL PRIMARY KEY |
+| nombre | TEXT |
+| correo | TEXT |
