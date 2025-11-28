@@ -8,8 +8,11 @@ app.use(cors());
 app.use(express.json());
 
 const pool = new Pool({
-  connectionString: process.env.DATABASE_URL,
-  ssl: process.env.DATABASE_URL ? { rejectUnauthorized: false } : false
+  host: process.env.DB_HOST || 'postgres-db',
+  port: process.env.DB_PORT || 5432,
+  database: process.env.DB_NAME || 'crud_db',
+  user: process.env.DB_USER || 'postgres',
+  password: process.env.DB_PASSWORD || 'postgres'
 });
 
 pool.on('error', (err) => {
